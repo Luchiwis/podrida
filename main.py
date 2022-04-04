@@ -23,8 +23,9 @@ class Ronda:
         self.pedir_manos()
 
         #Game
+        jugador_inicial=0 #index
         for _ in enumerate(cartas_por_jugador):
-            for j in jugadores:
+            for j in self.jugadores[inicial:]+[:inicial]:
                 cartas = j.cartas
                 jugables = self.cartas_jugables(cartas)
                 carta_jugada = j.turno(jugables)
@@ -34,6 +35,9 @@ class Ronda:
             
             carta_ganadora = self.carta_ganadora(self.context)
             #TODO: determinar ganador
+            #TODO: set inicial
+            #
+            
 
 
         self.puntuar()
