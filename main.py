@@ -12,10 +12,9 @@ class Ronda:
 
         #variables temporales, se reasignan en cada mano
         self.triunfo = None
-        self.fallo = False
         self.context = []   #historial de cartas jugadas
 
-        #execution
+        #execution:
 
         #pre-Game
         self.mezclar()
@@ -24,10 +23,20 @@ class Ronda:
         self.pedir_manos()
 
         #Game
+        for _ in enumerate(cartas_por_jugador):
+            for j in jugadores:
+                cartas = j.cartas
+                jugables = self.cartas_jugables(cartas)
+                carta_jugada = j.turno(jugables)
+                self.context.append(carta_jugada)
 
-        #...
+                print(f"cartas jugadas:\n {self.context}")
+            
+            carta_ganadora = self.carta_ganadora(self.context)
+            #TODO: determinar ganador
 
-        #self.puntuar()
+
+        self.puntuar()
 
     
     def mezclar(self): #set self.mazo

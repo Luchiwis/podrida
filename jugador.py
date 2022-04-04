@@ -13,11 +13,13 @@ class Jugador:
         manos = int(input("manos: "))
         self.manos_pedidas = manos
 
-    def turno(self,cartas_jugables):
-        pass
+    def turno(self,cartas_jugables): # -> carta
+        print("seleccionar una carta")
+        for i,c in enumerate(cartas_jugables):
+            print(f"{i}) {c}")
 
-    def tirar_carta(self,carta):
-        pass
+        i = int(input(":"))
+        return cartas_jugables.pop(i)
     
     def __str__(self):
         return self.nombre
