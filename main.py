@@ -34,9 +34,11 @@ class Ronda:
                 print(f"cartas jugadas:\n {self.context}")
             
             carta_ganadora = self.carta_ganadora(self.context)
-            #TODO: determinar ganador
-            #TODO: set inicial
-            #
+            for j in self.jugadores:
+                if j.carta_tirada == carta_ganadora:
+                    ganador = j
+            index_ganador = self.jugadores.index(ganador)
+            jugador_inicial = index_ganador
             
 
 
