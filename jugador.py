@@ -12,9 +12,14 @@ class Jugador:
         #en mano
         self.carta_tirada = None
 
-    def pedir_manos(self, limit):   #set self.manos_pedidas
-        manos = int(input("manos: "))
-        self.manos_pedidas = manos
+    def pedir_manos(self, posibles):   #set self.manos_pedidas
+        print("cuantas manos pedis?")
+        for i in posibles:
+            print(f"{i})")
+        
+        i = int(input(":"))
+        assert i in posibles
+        self.manos_pedidas = i
 
     def turno(self,cartas_jugables): # -> carta
         print("seleccionar una carta")

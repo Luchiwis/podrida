@@ -1,126 +1,82 @@
-import random
+from ronda import Ronda
+from jugador import Jugador
+from random import shuffle
 
-class Ronda:
-    def __init__(self, cartas_por_jugador, jugador_mano, jugadores, mazo):
-
-        #set
-        self.mazo = mazo
+class Juego:
+    """
+    Hay un juego, cada juego tiene X cantidad de rondas y cada ronda tiene Y cantidad de manos
+    """
+    def __init__(self, jugadores):
         self.jugadores = jugadores
-        self.jugador_mano = jugador_mano
-        self.jugador_pie = self.jugadores[self.jugadores.index(jugador_mano)-1]
-        self.cartas_por_jugador = cartas_por_jugador
+        shuffle(self.jugadores)              #determina el orden de los jugadores, 0 es mano en la primera ronda
+        self.cantidad_jugadores = len(jugadores)
+        assert 3 <= self.cantidad_jugadores <= 8  #la cantidad de jugadores debe estar entre 3 y 8
 
-        #variables temporales, se reasignan en cada mano
-        self.triunfo = None
-        self.context = []   #historial de cartas jugadas
+        #mazo ordenado
+        self.cartas_oro = [(i, "oro") for i in range(1, 13)]
+        self.cartas_espada = [(i, "espada") for i in range(1, 13)]
+        self.cartas_copa = [(i, "copa") for i in range(1, 13)]
+        self.cartas_basto = [(i, "basto") for i in range(1, 13)]
+        self.cartas_comodines = [[0, "comodin"], [0, "comodin"]]
 
-        #execution:
+        # unAssigned vars
+        self.mazo = ()                                  #el mazo con las cartas totales con las que se va a desarrollar el juego
+        self.cartas_sin_triunfo = 0                     #las rondas sin triunfo se van a jugar con esta cantidad de cartas
+        self.lista_rondas = []                          #lista con los numeros de cartas repartidas en cada ronda [1,2,3,4, ... , 4,3,2,1]
+        self.lista_pies = []
 
-        #pre-Game
-        self.mezclar()
-        self.repartir()
-        self.set_triunfo()
-        self.pedir_manos()
+        # just assigned vars
+        self._ajustarMazo()                             #ajusta el mazo, las cartas sin triunfo y la lista de rondas
+        self.cantidad_rondas = len(self.lista_rondas)   #int que indica la cantidad de rondas totales
 
-        #Game
-        jugador_inicial=0 #index
-        for _ in enumerate(cartas_por_jugador):
-            for j in self.jugadores[inicial:]+[:inicial]:
-                cartas = j.cartas
-                jugables = self.cartas_jugables(cartas)
-                carta_jugada = j.turno(jugables)
-                self.context.append(carta_jugada)
+        for r,p in zip(self.lista_rondas,self.lista_pies):
+            self.jugar_ronda(r, p)
 
-                print(f"cartas jugadas:\n {self.context}")
-            
-            carta_ganadora = self.carta_ganadora(self.context)
-            for j in self.jugadores:
-                if j.carta_tirada == carta_ganadora:
-                    ganador = j
-            index_ganador = self.jugadores.index(ganador)
-            jugador_inicial = index_ganador
-            
+    def jugar_ronda(self, cartas_por_jugador, jugador_mano):
+        Ronda(cartas_por_jugador, jugador_mano, self.jugadores, self.mazo)
 
-
-        self.puntuar()
-
-    
-    def mezclar(self): #set self.mazo
-        random.shuffle(self.mazo)
-        print("mazo mezclado")
-    
-    def repartir(self): #set jugadores.cartas
-        for _ in range(self.cartas_por_jugador):
-            for j in self.jugadores:
-                carta = self.mazo.pop(0)
-                j.cartas.append(carta)
-    
-    def set_triunfo(self): #set self.triunfo
-        if self.mazo:
-            self.triunfo = self.mazo.pop(0)
-    
-    def pedir_manos(self): #set jugadores.manos_pedidas()
-        suma_de_manos_pedidas = 0
-        for j in self.jugadores:
-            #funcion limite de cartas a pedir
-            if j == self.jugador_pie:
-                restriccion_de_pie = suma_de_manos_pedidas
+    def _ajustarMazo(self): #set mazo, set cartas_sin_triunfo, set lista_rondas
+        "ajusta el mazo en funcion de la cantidad de jugadores"
+        eliminar_cartas = {
+            3: [8, 9],  # 42
+            4: [0],  # 48
+            5: [],  # 50
+            6: [0],  # 48
+            7: [8, 9],  # 42
+            8: [0],  # 48
+        }
+        for n in eliminar_cartas[self.cantidad_jugadores]:
+            if n == 0:
+                self.cartas_comodines = []
             else:
-                restriccion_de_pie = None
+                self.cartas_oro.pop(n - 1)
+                self.cartas_espada.pop(n - 1)
+                self.cartas_copa.pop(n - 1)
+                self.cartas_basto.pop(n - 1)
 
-            funcion_limite = (lambda x: (x<=self.cartas_por_jugador) and (x!=restriccion_de_pie))
+        self.mazo = (
+            self.cartas_oro
+            + self.cartas_espada
+            + self.cartas_copa
+            + self.cartas_basto
+            + self.cartas_comodines
+        )
 
-            j.pedir_manos(funcion_limite) #solicitud al jugador TODO
+        self.cartas_sin_triunfo = len(self.mazo) // self.cantidad_jugadores
 
-            suma_de_manos_pedidas += j.manos_pedidas
+        self.lista_rondas = (
+            list(range(1, self.cartas_sin_triunfo, 1))
+            + [self.cartas_sin_triunfo for _ in range(self.cantidad_jugadores - 1)]
+            + list(range(self.cartas_sin_triunfo, 0, -1))
+        )
 
-    #TODO: TEST
-    def cartas_jugables(self, cartas_disponibles):  #-> list de cartas
-        """retorna las cartas jugables dado una lista de cartas y un contexto"""
-        fallo = self.triunfo.palo in [c.palo for c in self.context]
+        #TODO: test
+        self.lista_pies = [self.jugadores[i] for i in range(len(self.jugadores)) for _ in range(len(self.lista_rondas)//len(self.jugadores))]
 
-        if not self.context:  #si no hay cartas entonces soy el primero
-            return cartas_disponibles
-        else:
-            mano_actual = max(list(filter(lambda carta :carta[1] == self.context[0][1], self.context))) #carta mas alta del mismo palo de la primera carta tirada
-            ultimo_triunfo_mas_alto = max(list(filter(lambda carta :carta[1] == self.triunfo, cartas_disponibles)))  #triunfo mas alto tirado
 
-            cumplen_regla_1 = list(filter(lambda carta :carta[0]>=mano_actual[0] and carta[1] == mano_actual[1], cartas_disponibles)) #regla1 (mayor del mismo palo)
-            cumplen_regla_2 = list(filter(lambda carta :carta[1] == mano_actual[1], cartas_disponibles)) #regla2   (mismo palo)
-            cumplen_regla_3 = list(filter(lambda carta :carta[0]>=ultimo_triunfo_mas_alto[0] and carta[1] == self.triunfo, cartas_disponibles)) #regla3.0 (hay triunfo mas alto que el anterior)
-            cumplen_regla_4 = list(filter(lambda carta :carta[1] == self.triunfo, cartas_disponibles)) #regla3.1 (hay triunfo)
 
-            if cumplen_regla_1:
-                return cumplen_regla_1
-            elif cumplen_regla_2:
-                return cumplen_regla_2
-            elif cumplen_regla_3:
-                return cumplen_regla_3
-            elif cumplen_regla_4:
-                return cumplen_regla_4
-            else:
-                return cartas_disponibles
+jugadores = [Jugador("teti"), Jugador("mario"), Jugador("lucio"), Jugador("pablo")]
 
-    #TODO: TEST
-    def carta_ganadora(self,cartas_tiradas): #-> carta
-        """retorna la carta ganadora de una mano dada una lista de cartas tiradas"""
+juego = Juego(jugadores)
 
-        triunfos = list(filter(lambda x: x == self.triunfo,[c[1] for c in cartas_tiradas]))
-        palo_principal = list(filter(lambda x: x == cartas_tiradas[0][1],[c[1] for c in cartas_tiradas]))
-
-        if triunfos:    #si hay cartas con triunfo
-            return max(triunfos)
-        else:
-            return max(palo_principal)
-
-    #TODO: TEST
-    def puntuar(self):  #set jugadores.puntos
-        """asigna puntaje a los jugadores"""
-        for j in self.jugadores:
-            puntos = 0
-            manos_ganadas = len(j.manos_ganadas)
-            manos_pedidas = j.manos_pedidas
-            if manos_pedidas == manos_ganadas:
-                puntos +=10
-            puntos += manos_ganadas
-            j.puntos = puntos
+print(juego.lista_pies)
