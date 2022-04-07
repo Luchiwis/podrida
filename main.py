@@ -29,9 +29,6 @@ class Juego:
         self._ajustarMazo()                             #ajusta el mazo, las cartas sin triunfo y la lista de rondas
         self.cantidad_rondas = len(self.lista_rondas)   #int que indica la cantidad de rondas totales
 
-        for r,p in zip(self.lista_rondas,self.lista_pies):
-            self.jugar_ronda(r, p)
-
     def jugar_ronda(self, cartas_por_jugador, jugador_mano):
         Ronda(cartas_por_jugador, jugador_mano, self.jugadores, self.mazo)
 
@@ -73,10 +70,13 @@ class Juego:
         #TODO: test
         self.lista_pies = [self.jugadores[i] for i in range(len(self.jugadores)) for _ in range(len(self.lista_rondas)//len(self.jugadores))]
 
+from pprint import pprint
+if __name__ == "__main__":
 
+    jugadores = [Jugador("teti"), Jugador("mario"), Jugador("lucio"), Jugador("pablo")]
 
-jugadores = [Jugador("teti"), Jugador("mario"), Jugador("lucio"), Jugador("pablo")]
+    juego = Juego(jugadores)
+    pprint(juego.mazo)
 
-juego = Juego(jugadores)
-
-print(juego.lista_pies)
+    for r,p in zip(juego.lista_rondas,juego.lista_pies):
+            juego.jugar_ronda(r, p)

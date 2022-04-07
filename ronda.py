@@ -71,54 +71,49 @@ class Ronda:
             index_ganador = self.jugadores.index(ganador)
             jugador_inicial = index_ganador
 
-    #TODO: TEST
-    def cartas_jugables(self, cartas_disponibles):  #-> list de cartas
+    def cartas_jugables(self, cartas_disponibles):  # -> list de cartas
         """retorna las cartas jugables dado una lista de cartas y un contexto"""
-        #TODO: FALLO?
-        # fallo = self.triunfo.palo in [c.palo for c in self.context]
 
-        if not self.context:  #si no hay cartas entonces soy el primero
+        mano_actual = max(list(filter(lambda carta: carta[1] == self.context[0][1], self.context)))  # carta mas alta del mismo palo de la primera carta tirada
+        triunfos = list(filter(lambda carta: carta[1] == self.triunfo, self.context))
+        ultimo_triunfo_mas_alto = max(triunfos) if triunfos else None  # triunfo mas alto tirado
+
+        # regla1 (mayor del mismo palo)
+        cumplen_regla_1 = list(filter(lambda carta: (carta[0] >= mano_actual[0]) and (carta[1] == mano_actual[1]), cartas_disponibles))
+        
+        # regla2   (mismo palo)
+        cumplen_regla_2 = list(filter(lambda carta: (carta[1] == mano_actual[1]), cartas_disponibles))
+
+        if triunfos:
+            # regla3.0 (hay triunfo mas alto que el anterior)
+            cumplen_regla_3 = list(filter(lambda carta: (carta[0] >= ultimo_triunfo_mas_alto[0]) and (carta[1] == self.triunfo), cartas_disponibles))
+            
+        # regla4 (hay triunfo)
+        cumplen_regla_4 = list(filter(lambda carta: (carta[1] == self.triunfo), cartas_disponibles))
+
+        if not self.context:  # si no hay cartas entonces soy el primero
             return cartas_disponibles
+
+        if cumplen_regla_1:
+            return cumplen_regla_1
+        elif cumplen_regla_2:
+            return cumplen_regla_2
+        elif triunfos and cumplen_regla_3:
+            return cumplen_regla_3
+        elif cumplen_regla_4:
+            return cumplen_regla_4
         else:
-            mano_actual = max(list(filter(lambda carta :carta[1] == self.context[0][1], self.context))) #carta mas alta del mismo palo de la primera carta tirada
-            ultimo_triunfo_mas_alto = max(list(filter(lambda carta :carta[1] == self.triunfo, cartas_disponibles)))  #triunfo mas alto tirado
+            return cartas_disponibles
 
-            cumplen_regla_1 = list(filter(lambda carta :carta[0]>=mano_actual[0] and carta[1] == mano_actual[1], cartas_disponibles)) #regla1 (mayor del mismo palo)
-            cumplen_regla_2 = list(filter(lambda carta :carta[1] == mano_actual[1], cartas_disponibles)) #regla2   (mismo palo)
-            cumplen_regla_3 = list(filter(lambda carta :carta[0]>=ultimo_triunfo_mas_alto[0] and carta[1] == self.triunfo, cartas_disponibles)) #regla3.0 (hay triunfo mas alto que el anterior)
-            cumplen_regla_4 = list(filter(lambda carta :carta[1] == self.triunfo, cartas_disponibles)) #regla3.1 (hay triunfo)
-
-            if cumplen_regla_1:
-                return cumplen_regla_1
-            elif cumplen_regla_2:
-                return cumplen_regla_2
-            elif cumplen_regla_3:
-                return cumplen_regla_3
-            elif cumplen_regla_4:
-                return cumplen_regla_4
-            else:
-                return cartas_disponibles
-
-    #TODO: TEST
     def carta_ganadora(self,cartas_tiradas): #-> carta
         """retorna la carta ganadora de una mano dada una lista de cartas tiradas"""
 
-        triunfos = list(filter(lambda x: x == self.triunfo,[c[1] for c in cartas_tiradas]))
-        palo_principal = list(filter(lambda x: x == cartas_tiradas[0][1],[c[1] for c in cartas_tiradas]))
+        triunfos = list(filter(lambda carta: carta[1] == self.triunfo, cartas_tiradas))
+        palo_principal = list(filter(lambda carta: carta[1] == cartas_tiradas[0][1], cartas_tiradas))
 
         if triunfos:    #si hay cartas con triunfo
             return max(triunfos)
         else:
             return max(palo_principal)
 
-    #TODO: TEST
-    def puntuar(self):  #set jugadores.puntos
-        """asigna puntaje a los jugadores"""
-        for j in self.jugadores:
-            puntos = 0
-            manos_ganadas = len(j.manos_ganadas)
-            manos_pedidas = j.manos_pedidas
-            if manos_pedidas == manos_ganadas:
-                puntos +=10
-            puntos += manos_ganadas
-            j.puntos = puntos
+    

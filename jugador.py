@@ -12,7 +12,11 @@ class Jugador:
         #en mano
         self.carta_tirada = None
 
+    def say_name(self):
+        print(f"\n{self.nombre}")
+
     def pedir_manos(self, posibles):   #set self.manos_pedidas
+        self.say_name()
         print("cuantas manos pedis?")
         for i in posibles:
             print(f"{i})")
@@ -22,6 +26,7 @@ class Jugador:
         self.manos_pedidas = i
 
     def turno(self,cartas_jugables): # -> carta
+        self.say_name()
         print("seleccionar una carta")
         for i,c in enumerate(cartas_jugables):
             print(f"{i}) {c}")
