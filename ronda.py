@@ -4,16 +4,17 @@ class Ronda:
     def __init__(self, cartas_por_jugador, jugador_mano, jugadores, mazo):
 
         #set
-        self.mazo = mazo
-        self.jugadores = jugadores
-        self.jugador_mano = jugador_mano
-        self.jugador_pie = self.jugadores[self.jugadores.index(jugador_mano)-1]
-        self.cartas_por_jugador = cartas_por_jugador
+        self.mazo = mazo                                                            #lista de cartas -> (int,str)
+        self.jugadores = jugadores                                                  #lista de Jugadores
+        self.jugador_mano = jugador_mano                                            #Jugador
+        self.jugador_pie = self.jugadores[self.jugadores.index(jugador_mano)-1]     #Jugador
+        self.cartas_por_jugador = cartas_por_jugador                                #int de la ronda
 
         #variables temporales, se reasignan en cada mano
-        self.triunfo = None
+        self.triunfo = None #string del palo
         self.context = []   #historial de cartas jugadas
 
+        ##########
         #execution:
         ##########
 
@@ -35,10 +36,12 @@ class Ronda:
             for j in self.jugadores:
                 carta = self.mazo.pop(0)
                 j.cartas.append(carta)
+        print("cartas repartidas")
     
     def set_triunfo(self): #set self.triunfo
         if self.mazo:
-            self.triunfo = self.mazo.pop(0)
+            self.triunfo = self.mazo.pop(0)[1]
+        print(f"triunfo: {self.triunfo}")
     
     def pedir_manos(self): #set jugadores.manos_pedidas()
         suma_de_manos_pedidas = 0
@@ -62,7 +65,7 @@ class Ronda:
                 carta_jugada = j.turno(jugables)
                 self.context.append(carta_jugada)
 
-                print(f"cartas jugadas:\n {self.context}")
+                
             
             carta_ganadora = self.carta_ganadora(self.context)
             for j in self.jugadores:
@@ -70,11 +73,16 @@ class Ronda:
                     ganador = j
             index_ganador = self.jugadores.index(ganador)
             jugador_inicial = index_ganador
+            print(f"cartas jugadas:\n {self.context}")
+            print(f"ganador {self.jugadores[index_ganador]} con  {carta_ganadora}")
 
     def cartas_jugables(self, cartas_disponibles):  # -> list de cartas
         """retorna las cartas jugables dado una lista de cartas y un contexto"""
+        if not self.context:
+            return cartas_disponibles
 
-        mano_actual = max(list(filter(lambda carta: carta[1] == self.context[0][1], self.context)))  # carta mas alta del mismo palo de la primera carta tirada
+
+        mano_actual = max(list(filter(lambda carta: carta[1] == self.context[0][1], self.context)))
         triunfos = list(filter(lambda carta: carta[1] == self.triunfo, self.context))
         ultimo_triunfo_mas_alto = max(triunfos) if triunfos else None  # triunfo mas alto tirado
 
@@ -116,4 +124,13 @@ class Ronda:
         else:
             return max(palo_principal)
 
-    
+    def puntuar(self):  #set jugadores.puntos
+        """asigna puntaje a los jugadores"""
+        for j in self.jugadores:
+            puntos = 0
+            manos_ganadas = len(j.manos_ganadas)
+            manos_pedidas = j.manos_pedidas
+            if manos_pedidas == manos_ganadas:
+                puntos +=10
+            puntos += manos_ganadas
+            j.puntos = puntos

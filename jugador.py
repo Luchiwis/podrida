@@ -18,6 +18,7 @@ class Jugador:
     def pedir_manos(self, posibles):   #set self.manos_pedidas
         self.say_name()
         print("cuantas manos pedis?")
+        print(f"cartas: {self.cartas}")
         for i in posibles:
             print(f"{i})")
         
