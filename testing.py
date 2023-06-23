@@ -1,20 +1,26 @@
 from unittest import TestCase
 from jugador import Jugador
 
+
 class Testing:
     def __init__(self):
         self.context = []
         self.triunfo = None
-        self.jugadores = [Jugador("teti"), Jugador("mario"), Jugador("lucio"), Jugador("pablo")]
+        self.jugadores = [
+            Jugador("teti"),
+            Jugador("mario"),
+            Jugador("lucio"),
+            Jugador("pablo"),
+        ]
 
-    def puntuar(self):  #set jugadores.puntos
+    def puntuar(self):  # set jugadores.puntos
         """asigna puntaje a los jugadores"""
         for j in self.jugadores:
             puntos = 0
             manos_ganadas = len(j.manos_ganadas)
             manos_pedidas = j.manos_pedidas
             if manos_pedidas == manos_ganadas:
-                puntos +=10
+                puntos += 10
             puntos += manos_ganadas
             j.puntos = puntos
 
